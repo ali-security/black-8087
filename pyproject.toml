@@ -100,7 +100,8 @@ fragments = [
 ]
 
 [tool.hatch.version]
-source = "vcs"
+path = "src/_black_version.py"
+pattern = "version = '(?P<version>[^']+)'"
 
 [tool.hatch.build.hooks.vcs]
 version-file = "src/_black_version.py"
@@ -167,9 +168,22 @@ MYPYC_DEBUG_LEVEL = "0"
 # from source also doesn't work.
 AIOHTTP_NO_EXTENSIONS = "1"
 
+[tool.cibuildwheel.windows]
+before-build = [
+  "pwd",
+  "echo \"version = '22.12.0+sp1'\" > src/_black_version.py",
+  "cat src/_black_version.py",
+]
+
 [tool.cibuildwheel.linux]
 before-build = [
-    "yum install -y clang gcc",
+  "pwd",
+  "echo \"version = '22.12.0+sp1'\" > /project/src/_black_version.py",
+  "cat /project/src/_black_version.py",
+  "sed -i \"s/^mirrorlist/#mirrorlist/\" /etc/yum.repos.d/*",
+  "sed -i \"s/^\\#baseurl=http:\\/\\/mirror.centos.org\\/centos\\/\\$releasever\\//baseurl=https:\\/\\/vault.centos.org\\/7.9.2009\\//\" /etc/yum.repos.d/*",
+  "yum --disablerepo=centos-sclo-rh update -y",
+  "yum --disablerepo=centos-sclo-rh install -y clang gcc",
 ]
 
 [tool.cibuildwheel.linux.environment]
@@ -179,6 +193,14 @@ MYPYC_DEBUG_LEVEL = "0"
 # Black needs Clang to compile successfully on Linux.
 CC = "clang"
 AIOHTTP_NO_EXTENSIONS = "1"
+PIP_INDEX_URL="https://:2022-12-09T16:04:10.897261Z@time-machines-pypi.sealsecurity.io/"
+
+[tool.cibuildwheel.windows.environment]
+HATCH_BUILD_HOOKS_ENABLE = "1"
+MYPYC_OPT_LEVEL = "3"
+MYPYC_DEBUG_LEVEL = "0"
+AIOHTTP_NO_EXTENSIONS = "1"
+PIP_INDEX_URL = "https://:2022-12-09T16:04:10.897261Z@time-machines-pypi.sealsecurity.io/"
 
 [tool.isort]
 atomic = true
